@@ -4,7 +4,7 @@ set -e
 
 on_exit() {
     docker rm -f "${new_container}" "${old_container}" >/dev/null 2>&1 || true
-    rm -rf ./new_dir ./old_dir ./image1.tar ./image2.tar ./result.log
+    rm -rf ./new_dir ./old_dir ./image1.tar ./image2.tar
 }
 
 trap on_exit EXIT
@@ -67,26 +67,28 @@ compare_images() {
     for add_file in $add_list; do
         mkdir -p "${docker_upgrade_dir}$(dirname "${add_file#new_dir}")"
         echo "$add_file"
-        cp -rf "$add_file" "${docker_upgrade_dir}$(dirname "${add_file#new_dir}")"
+        cp -rfP "$add_file" "${docker_upgrade_dir}$(dirname "${add_file#new_dir}")"
         add_count=$((add_count + 1))
     done
     echo "Total number of new files: $add_count"
-
+    echo "--------------------------------------------------------------------------"
+    echo
     echo "INFO: Copying updated files to directory [./result/update]"
     echo "Files to update after container comparison:"
     update_count=0
     for update_file in $update_list; do
         mkdir -p "${docker_upgrade_dir}$(dirname "${update_file#new_dir}")"
         echo "$update_file"
-        cp -rf "$update_file" "${docker_upgrade_dir}$(dirname "${update_file#new_dir}")"
+        cp -rfP "$update_file" "${docker_upgrade_dir}$(dirname "${update_file#new_dir}")"
         update_count=$((update_count + 1))
     done
     echo "Total number of updated files: $update_count"
-
+    echo "--------------------------------------------------------------------------"
+    echo
     if [ "$delete_list" == "" ]; then
         echo "INFO: No files to delete found after container comparison"
     else
-        echo -e "INFO: Found files to delete in container comparison ${TIMESTAMP}: \n $delete_list"
+        echo -e "INFO: Found files to delete in container comparison: \n$delete_list"
     fi
     echo "----------------------------------Full comparison complete---------------------------------"
     echo "------------------------------------------------------------------------------------------"
